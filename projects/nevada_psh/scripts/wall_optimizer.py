@@ -253,6 +253,8 @@ if PLAN:
     rec = EVAL[0]; fig, ax = plt.subplots(figsize=(9, 9.5)); plan2(ax, rec, f"推荐方案：坝顶 {rec['crest_ft']:.0f} / 水位 {rec['nwl_ft']:.0f} ft，λ={rec['lambda']:g}；墙段编号对应分段表", number=True)
     ax.legend(handles=[plt.Line2D([], [], color="#e65100", lw=3, label="墙段（坝）"), plt.Line2D([], [], color="#1b5e20", lw=1.3, label="库区边界，其余为高于坝顶的天然岸"), Patch(facecolor="#2c7fb8", alpha=0.45, label="天然蓄水面"), Patch(facecolor="#fd8d3c", label="再挖深度"), plt.Line2D([], [], color="k", ls="--", label="宗地界")], fontsize=7, loc="lower left")
     fig.tight_layout(); fig.savefig(os.path.join(OUT, "wall_plan_recommended.png"), dpi=120); plt.close(fig)
+    json.dump([{"crest_ft": r["crest_ft"], "lambda": r["lambda"], "walls": [w.wkt for w in r["_walls"] if w.geom_type == "LineString"], "regions": [p.wkt for p in r["_polys"]],
+                "segments": r["segments"]} for r in EVAL], open(os.path.join(OUT, "wall_plan_geoms.json"), "w"))
     print("plan done"); sys.exit(0)
 for cf, out in curves.items():
     picks = {"拐点(边际效率≥2)": knee(out, 2.0), "拐点(边际效率≥1)": knee(out, 1.0)}
