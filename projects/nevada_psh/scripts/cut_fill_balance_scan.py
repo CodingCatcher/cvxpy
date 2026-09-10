@@ -78,8 +78,8 @@ for strat, cfg in STRATS.items():
     need_bank = d["fill_m3"] / SF + d["rcc_m3"] * AGG
     for F in floors:
         Fm = F * FT
-        # 切坡退让：底面低于坝趾（≈3,700 ft）时，按 0.75:1 切坡从坝趾内缘退让
-        setback = max(0.0, (3700 * FT - Fm)) * 0.75
+        # 切坡退让：底面低于轴线最低地面时，按 0.75:1 切坡从坝趾内缘退让
+        setback = max(0.0, (float(np.nanmin(zg)) - Fm)) * 0.75
         pit = pit0.buffer(-setback)
         if pit.is_empty: pit = pit0.buffer(-setback * 0.5)
         m_pit = shapely.contains_xy(pit, X.ravel(), Y.ravel()).reshape(X.shape)
