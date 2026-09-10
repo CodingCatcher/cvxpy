@@ -21,7 +21,7 @@
 | # | 资料 | 笔记 | 状态 |
 |---|---|---|---|
 | 1 | USBR Design of Small Dams (1987) | `notes/01_design_of_small_dams.md` | 已读，待讨论 |
-| 2 | USACE EM 1110-2-2300 | — | 待读 |
+| 2 | USACE EM 1110-2-2300 (2004) | `notes/02_em_1110-2-2300.md` | 已读，待讨论 |
 | 3 | USBR DS-13 (ch.2, 基础/稳定/变形) | — | 待读 |
 | 4 | USACE EM 1110-2-2200 | — | 待读 |
 | 5 | USBR RCC Manual 2017 | — | 待读 |
