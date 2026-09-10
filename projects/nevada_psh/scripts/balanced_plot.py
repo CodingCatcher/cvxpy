@@ -20,15 +20,15 @@ def plot_balanced(line):
         ax.plot(xs, gwh_nocut, "x--", color=col, alpha=0.5, label=f"{NAME[ty]} 不挖")
         ax.plot(xs, [f(r["net_GWh"]) if b else np.nan for r, b in zip(rr, bal)], "o-", color=col, label=f"{NAME[ty]} 最少开挖的平衡点（料 = 需求）")
         ax.plot(xs, [f(r["maxnet_GWh"]) for r in rr], ":", color=col, alpha=0.8)
-        ax.scatter([x for x, b in zip(xs, bal) if b], [f(r["maxnet_GWh"]) for r, b in zip(rr, bal) if b], marker="s", color=col, label=f"{NAME[ty]} 挖到库容最大（有余料）")
-        ax.scatter([x for x, b in zip(xs, bal) if not b], [f(r["maxnet_GWh"]) for r, b in zip(rr, bal) if not b], marker="s", facecolors="none", edgecolors=col, label=f"{NAME[ty]} 库容最大但料不够（空心）")
+        ax.scatter([x for x, b in zip(xs, bal) if b], [f(r["maxnet_GWh"]) for r, b in zip(rr, bal) if b], marker="s", color=col, label=f"{NAME[ty]} 深挖参考点（库容达几何极限 95%，有余料）")
+        ax.scatter([x for x, b in zip(xs, bal) if not b], [f(r["maxnet_GWh"]) for r, b in zip(rr, bal) if not b], marker="s", facecolors="none", edgecolors=col, label=f"{NAME[ty]} 深挖参考点但料不够（空心）")
         for r, b in zip(rr, bal):
             if b:
                 ax.annotate(f"底{f(r['floor_ft']):.0f}/挖{f(r['cut_Mm3']):.0f}", (f(r["crest_ft"]), f(r["net_GWh"])), fontsize=7, textcoords="offset points", xytext=(4, -10))
             ax.annotate(f"底{f(r['maxnet_floor_ft']):.0f}/挖{f(r['maxnet_cut_Mm3']):.0f}/x{f(r['maxnet_surplus_ratio']):.1f}", (f(r["crest_ft"]), f(r["maxnet_GWh"])), fontsize=6, color=col, textcoords="offset points", xytext=(4, 4))
     ax.set_xlabel("坝顶高程 ft（水位 = 坝顶 − 20 ft）"); ax.set_ylabel("净库容对应电量 GWh（下库 2,400 ft，η 0.85）")
     ax.grid(alpha=0.3); ax.legend(fontsize=7, loc="upper left")
-    ax.set_title(f"{line}：所有坝料来自库内开挖时的平衡设计（堆石 1 m³ 原岩 → 1.2 m³；RCC 骨料 0.9）\n标注：底=库底 ft / 挖=挖方 Mm³ / x=挖方÷需求")
+    ax.set_title(f"{line}：所有坝料来自库内碗形坑（坑壁 0.75:1，平台 20 m）时的平衡设计\n堆石 1 m³ 原岩 → 1.2 m³，RCC 骨料 0.9；标注：底=库底 ft / 挖=挖方 Mm³ / x=挖方÷需求", fontsize=10)
     fig.tight_layout(); fig.savefig(os.path.join(OUT, f"balanced_{line}.png"), dpi=130); plt.close(fig)
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+> 旧版（固定坝顶 4,120 ft 的框架，笔记 12/13）。现行版本是打孔为主框架的 `D2_profile_and_sections.html`（笔记 14）。
+
 # 交付物 2：整条坝线纵剖面与代表断面（坝线 A_parcel_ring_3700）
 
 生成：`python3 scripts/deliverables_1_2.py`。图：`outputs/D2_profile.png`（纵剖面）、`outputs/D2_sections.png`（代表断面）；站表 `outputs/types_A_parcel_ring_3700_stations.csv`（每 10 m 一站，四种断面的坝趾、底宽、面积、上游楔）；断面表 `outputs/D2_sections_table.csv`。

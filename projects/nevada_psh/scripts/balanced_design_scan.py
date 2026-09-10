@@ -7,6 +7,10 @@
   3. 需求：堆石 = 压实方 / SF_rock（1 m³ 原岩压实后约 1.2 m³ 堆石，取 1.1–1.3 的中值）；RCC 骨料 = 0.9 × RCC 方量；
   4. 找最浅的 F 使 cut(F) ≥ 需求 —— 这就是"料全部来自孔里"的平衡点；记录该点的库容、电量、坝体、孔深。
 输出：outputs/balanced_<line>.csv 与 outputs/balanced_<line>.png。
+坑的规则（--wall=bowl，默认）：碗形坑，坑壁顶线 = 上游坝趾多边形向内退 20 m 平台，坑壁 0.75:1 向内下降到底面 F；
+  开挖面 = min(地面, max(F, 坑壁面))。旧规则（--wall=uniform）：底面平、可挖区 = 坝趾多边形统一退让 (最低坝基 − F)×0.75，
+  在地面高的段落把坑壁算到了坝体下面和宗地外，挖方偏大 1.5–2.5 倍（见笔记 14 §2.0 的修正）。
+"深挖参考点"（列名仍为 maxnet_*）= 净库容达到几何极限（坑壁相遇）95% 的最浅底面；"平衡点" = 挖方刚够坝料的最浅底面。
 
 用法：python3 balanced_design_scan.py A_parcel_ring_3700 [3800 3850 ... 坝顶ft列表]
 """
@@ -19,8 +23,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from terrain_model import (Terrain, SECTIONS, FT, DATA, OUT, cross_section, dam_section, densify,
                            inward_normals, longitudinal_profile)  # noqa
 
-ARGS = [a for a in sys.argv[1:] if not a.startswith("--types=")]
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
 TYPES_ARG = [a for a in sys.argv[1:] if a.startswith("--types=")]
+WALL_ARG = [a for a in sys.argv[1:] if a.startswith("--wall=")]
+WALL = WALL_ARG[0].split("=", 1)[1] if WALL_ARG else "bowl"   # bowl（默认）| uniform（旧规则，见下）
+WALL_M = 0.75      # 坑壁坡比 H:V（0.75:1 ≈ 53°）
+BERM = 20.0        # 上游坝趾（或无坝处的坝轴/宗地界）与坑壁顶之间留的平台 m
+CAP_FT = 3950.0    # Mehrten 泥流盖层下界：以上算"盖层"挖方
 LINE = ARGS[0] if ARGS else "A_parcel_ring_3700"
 CRESTS = [float(x) for x in ARGS[1:]] or [3800, 3850, 3900, 3950, 4000, 4050, 4120]
 SF_ROCK = 1.2      # 压实堆石 m³ / 原岩 m³（松方 1/0.65 ≈ 1.54，压实后约 ×0.78）
@@ -62,6 +71,25 @@ def grid_volume(spec, crest, toe_us, toe_ds, feas):
     tu = np.interp(st_dense[bidx], s, np.nan_to_num(toe_us, nan=0.0)); td = np.interp(st_dense[bidx], s, np.nan_to_num(toe_ds, nan=0.0))
     return float(np.sum(thick[(boff <= tu) & (boff >= td) & fd]) * t.px ** 2)
 
+def wall_field(pit0):
+    """碗形坑的坑壁约束场：对坑壁顶线（上游坝趾多边形向内退 BERM）上每 5 m 一个点 b（地面 z_b），
+    库内像元 p 的坑壁面高程 wmax(p) = max_b [z_b − d(p,b)/WALL_M]。返回 inside 掩膜与 wmax。"""
+    top = pit0.buffer(-BERM)
+    if top.is_empty: return {"inside": np.zeros_like(z_ring, bool), "wmax": np.full_like(z_ring, np.inf)}
+    if top.geom_type != "Polygon": top = max(top.geoms, key=lambda g: g.area)
+    bpts = np.array(shapely.segmentize(top.exterior, 5.0).coords); zb = t.elev(bpts[:, 0], bpts[:, 1])
+    ok = np.isfinite(zb); bpts = bpts[ok]; zb = zb[ok]
+    inside = shapely.contains_xy(top, X.ravel(), Y.ravel()).reshape(X.shape) & np.isfinite(z_ring)
+    wmax = np.full(z_ring.shape, np.inf)
+    idx = np.where(inside.ravel())[0]; px_ = X.ravel()[idx]; py_ = Y.ravel()[idx]; out = np.empty(len(idx))
+    CH = 20000
+    for a in range(0, len(idx), CH):
+        dx = px_[a:a + CH, None] - bpts[None, :, 0]; dy = py_[a:a + CH, None] - bpts[None, :, 1]
+        out[a:a + CH] = np.max(zb[None, :] - np.hypot(dx, dy) / WALL_M, axis=1)
+    wmax.ravel()[idx] = out
+    return {"inside": inside, "wmax": wmax}
+
+
 rows = []
 for crest_ft in CRESTS:
     crest = crest_ft * FT; nwl = crest - 20 * FT
@@ -83,36 +111,51 @@ for crest_ft in CRESTS:
         pit0 = Polygon(pit_pts).buffer(0)
         if pit0.geom_type != "Polygon": pit0 = max(pit0.geoms, key=lambda g: g.area)
         best = None; curve = []
-        for F_ft in np.arange(crest_ft - 50, 3200, -50):
+        if WALL == "bowl":
+            # 碗形坑：坑壁从（上游坝趾 − 平台）处的天然地面以 0.75:1 向内下降，底面平到 F；
+            # 任一点的开挖面 = min(地面, max(F, max_b[z_b − d(p,b)/0.75]))，b 取坑壁顶线上的点。
+            # 这样坑壁在地面高的段落自动占更宽的带，不会伸到坝体下面或宗地外。
+            wall = wall_field(pit0)
+        for F_ft in np.arange(crest_ft - 50, 2950, -50):
             Fm = F_ft * FT
-            sb = max(0.0, zmin_axis - Fm) * 0.75
-            pit = pit0.buffer(-sb)
-            if pit.is_empty: break
-            mp = shapely.contains_xy(pit, X.ravel(), Y.ravel()).reshape(X.shape)
-            cut = float(np.where(mp, np.maximum(z_ring - Fm, 0.0), 0.0).sum())
-            z_new = np.where(mp, np.minimum(z_ring, Fm), z_ring)
-            gross = float(np.where(m_ring, np.maximum(nwl - z_new, 0.0), 0.0).sum())
-            net = gross - wedge
-            curve.append((F_ft, cut, gross, net, float(mp.sum() / 4046.86)))
+            if WALL == "bowl":
+                z_new = np.where(wall["inside"], np.minimum(z_ring, np.maximum(Fm, wall["wmax"])), z_ring)
+            else:
+                sb = max(0.0, zmin_axis - Fm) * WALL_M
+                pit = pit0.buffer(-sb)
+                if pit.is_empty: break
+                mp = shapely.contains_xy(pit, X.ravel(), Y.ravel()).reshape(X.shape)
+                z_new = np.where(mp, np.minimum(z_ring, Fm), z_ring)
+            dz = np.maximum(z_ring - z_new, 0.0); cut = float(np.nansum(dz))
+            cap = float(np.nansum(np.maximum(z_ring - np.maximum(z_new, CAP_FT * FT), 0.0)))
+            gross = float(np.nansum(np.where(m_ring, np.maximum(nwl - z_new, 0.0), 0.0)))
+            net = gross - wedge; area = float((dz > 0.01).sum() / 4046.86)
+            curve.append((F_ft, cut, gross, net, area, cap))
             if best is None and cut >= need:
-                best = (F_ft, cut, gross, net, float(mp.sum() / 4046.86))
+                best = curve[-1]
         head = (nwl / FT - LOWER_FT) * FT
         gwh = lambda v: v * 1000 * 9.81 * head * 0.85 / 3.6e12
         max_cut = max(c[1] for c in curve) if curve else 0.0
-        # 最大库容点：净库容最大的底面（再挖切坡退让把可挖区吃掉，库容反而降）
-        top = max(curve, key=lambda c: c[3]) if curve else None
+        if WALL == "bowl":
+            # 深挖参考点：净库容达到几何极限（坑壁在中间相遇、底面消失）的 95% 的最浅底面
+            net_inf = curve[-1][3] if curve else 0.0
+            top = next((c for c in curve if c[3] >= 0.95 * net_inf), curve[-1]) if curve else None
+        else:
+            top = max(curve, key=lambda c: c[3]) if curve else None
         rec = {"line": LINE, "crest_ft": crest_ft, "nwl_ft": crest_ft - 20, "type": ty, "H_max_m": float(np.nanmax(crest - zg)),
                "dam_endarea_Mm3": V_ea / 1e6, "dam_grid_Mm3": V_grid / 1e6, "grid_cfrd_Mm3": V_grid_by.get("cfrd", 0.0) / 1e6, "grid_rcc_Mm3": V_grid_by.get("rcc", 0.0) / 1e6, "infeasible_m": float((~feas).sum() * 10),
                "need_bank_Mm3": need / 1e6, "wedge_Mm3": wedge / 1e6,
                "net_nocut_Mm3": (curve[0][2] - wedge) / 1e6 if curve else np.nan,
                "max_cut_Mm3": max_cut / 1e6,
                "balanced": best is not None,
-               "floor_ft": best[0] if best else "", "cut_Mm3": best[1] / 1e6 if best else "", "pit_acre": best[4] if best else "",
+               "floor_ft": best[0] if best else "", "cut_Mm3": best[1] / 1e6 if best else "", "cap_Mm3": best[5] / 1e6 if best else "", "pit_acre": best[4] if best else "",
                "net_Mm3": best[3] / 1e6 if best else "", "net_GWh": gwh(best[3]) if best else "",
-               "maxnet_floor_ft": top[0] if top else "", "maxnet_cut_Mm3": top[1] / 1e6 if top else "", "maxnet_pit_acre": top[4] if top else "",
+               "maxnet_floor_ft": top[0] if top else "", "maxnet_cut_Mm3": top[1] / 1e6 if top else "", "maxnet_cap_Mm3": top[5] / 1e6 if top else "", "maxnet_pit_acre": top[4] if top else "",
                "maxnet_Mm3": top[3] / 1e6 if top else "", "maxnet_GWh": gwh(top[3]) if top else "",
                "maxnet_surplus_ratio": (top[1] / need) if (top and need) else "",
+               "netinf_Mm3": (curve[-1][3] / 1e6) if curve else "", "wall": WALL, "berm_m": BERM, "wall_m": WALL_M,
                "head_m": head}
+        rec["curve"] = ";".join(f"{c[0]:.0f}:{c[1]/1e6:.2f}:{c[3]/1e6:.2f}" for c in curve)  # 底面:挖方:净库容
         rows.append(rec)
         fm = lambda v: f"{v:.1f}" if isinstance(v, float) else str(v)
         print(f"crest {crest_ft:.0f} {ty:4s} Hmax {rec['H_max_m']:5.0f} dam {rec['dam_grid_Mm3']:6.1f}/{rec['dam_endarea_Mm3']:6.1f} need {rec['need_bank_Mm3']:6.1f} "

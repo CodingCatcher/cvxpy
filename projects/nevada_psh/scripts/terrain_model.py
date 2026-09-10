@@ -667,3 +667,49 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ---------------------------------------------------------------------------
+# 碗形坑（笔记 14 §2.0 修正后的开挖规则）
+# ---------------------------------------------------------------------------
+class Bowl:
+    """碗形坑：坑壁顶线 = 上游坝趾多边形向内退 berm 的平台边；坑壁以 wall_m:1 向内下降；底面平到 F。
+    任一点 p 的开挖面 = min(地面, max(F, max_b[z_b − d(p,b)/wall_m]))，b 遍历坑壁顶线上每 5 m 一个点。
+    surface(P, F) 给任意点集的开挖面；field(X, Y, Z) 给栅格窗口的 inside 掩膜与坑壁面 wmax。"""
+
+    def __init__(self, t: "Terrain", toe_poly: Polygon, berm: float = 20.0, wall_m: float = 0.75):
+        self.t = t; self.berm = berm; self.wall_m = wall_m
+        top = toe_poly.buffer(-berm)
+        if not top.is_empty and top.geom_type != "Polygon":
+            top = max(top.geoms, key=lambda g: g.area)
+        self.top = top
+        if top.is_empty:
+            self.bpts = np.zeros((0, 2)); self.zb = np.zeros(0); return
+        b = np.array(shapely.segmentize(top.exterior, 5.0).coords); zb = t.elev(b[:, 0], b[:, 1]); ok = np.isfinite(zb)
+        self.bpts = b[ok]; self.zb = zb[ok]
+
+    def wmax(self, px, py):
+        out = np.full(len(px), np.inf)
+        if len(self.bpts) == 0: return out
+        CH = 20000
+        for a in range(0, len(px), CH):
+            dx = px[a:a + CH, None] - self.bpts[None, :, 0]; dy = py[a:a + CH, None] - self.bpts[None, :, 1]
+            out[a:a + CH] = np.max(self.zb[None, :] - np.hypot(dx, dy) / self.wall_m, axis=1)
+        return out
+
+    def surface(self, P, z_ground, F):
+        """P: (n,2) 点；z_ground: 各点地面；F: 底面高程 m。返回开挖面高程。"""
+        P = np.asarray(P, float); z_new = np.array(z_ground, float)
+        if self.top.is_empty: return z_new
+        inside = shapely.contains_xy(self.top, P[:, 0], P[:, 1]) & np.isfinite(z_new)
+        if inside.any():
+            w = self.wmax(P[inside, 0], P[inside, 1]); z_new[inside] = np.minimum(z_new[inside], np.maximum(F, w))
+        return z_new
+
+    def field(self, X, Y, Z):
+        """栅格窗口：返回 inside 掩膜与 wmax（外部为 +inf）。"""
+        inside = (shapely.contains_xy(self.top, X.ravel(), Y.ravel()).reshape(X.shape) & np.isfinite(Z)) if not self.top.is_empty else np.zeros(X.shape, bool)
+        wmax = np.full(X.shape, np.inf)
+        idx = np.where(inside.ravel())[0]
+        if len(idx): wmax.ravel()[idx] = self.wmax(X.ravel()[idx], Y.ravel()[idx])
+        return inside, wmax
