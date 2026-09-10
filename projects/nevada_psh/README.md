@@ -12,7 +12,7 @@
 | 路径 | 内容 |
 |---|---|
 | `notes/` | 每份资料一个读书笔记：学到什么、对本地块意味着什么、可直接引用的数值准则 |
-| `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡） |
+| `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡）。已有：`hillside_toe_geometry.py`（斜坡上各坝型坝趾位置与断面积）、`gravity_section_check.py`（重力坝断面按 EM 2200 / FERC 准则筛查） |
 | `data/` | 原始地形（DEM）、宗地边界、参数文件（后续加入） |
 | `outputs/` | 表格与图（后续加入） |
 
@@ -23,7 +23,7 @@
 | 1 | USBR Design of Small Dams (1987) | `notes/01_design_of_small_dams.md` | 已读，待讨论 |
 | 2 | USACE EM 1110-2-2300 (2004) | `notes/02_em_1110-2-2300.md` | 已读，待讨论 |
 | 3 | USBR DS-13 (ch.1/2/3/4/9/13) | `notes/03_usbr_ds13_embankment.md` | 已读，待讨论 |
-| 4 | USACE EM 1110-2-2200 | — | 待读 |
+| 4 | USACE EM 1110-2-2200 (1995) + FERC 导则第 3 章重力坝 (2016) | `notes/04_em_1110-2-2200_gravity.md` | 已读，待讨论 |
 | 5 | USBR RCC Manual 2017 | — | 待读 |
 | 6 | USBR Engineering Geology Field Manual | — | 待读 |
 | 7 | USACE EM 1110-2-2301 | — | 待读 |
