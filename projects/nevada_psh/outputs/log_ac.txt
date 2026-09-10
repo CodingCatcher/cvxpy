@@ -1,0 +1,95 @@
+{
+ "line": "A_parcel_ring_3700",
+ "closed": true,
+ "length_m": 4588.991531647551,
+ "crest_ft": 4120.0,
+ "nwl_ft": 4100.0,
+ "section_mode": "auto_close",
+ "floor_ft": null,
+ "cut_inside_bcm": 0.0,
+ "ground_along_axis_ft": {
+  "min": 3695.4471243845537,
+  "max": 4234.311613744659
+ },
+ "H_axis_m": {
+  "max": 129.4037164875881,
+  "mean": 91.55955729490151,
+  "length_H_gt_0": 4180.0
+ },
+ "dam_volume_m3": {
+  "end_area_10m": 63229155.91358562,
+  "grid_method": 63125201.450834766,
+  "by_kind": {
+   "rcc": 17766864.503935166,
+   "cfrd": 45462291.40965044
+  },
+  "stations_without_toe": 0,
+  "note": "end-area ignores plan curvature (underestimates on convex outer side); grid method assigns each cell to the nearest axis point. Both exclude stations where the face never meets the ground.",
+  "end_area_5m": 63399266.133970164,
+  "end_area_25m": 62926178.175385885
+ },
+ "infeasible": {
+  "length_m": 0.0,
+  "flattest_closing_m_ds_length_m": {},
+  "meaning": "stations where the chosen downstream face slope never meets the ground within 900 m; histogram gives the flattest slope (H:V) that would close, None = even a vertical face does not close"
+ },
+ "segments_by_height": [
+  {
+   "H_range_m": [
+    0,
+    10
+   ],
+   "length_m": 80.0,
+   "volume_m3": 8335.936166021524
+  },
+  {
+   "H_range_m": [
+    10,
+    20
+   ],
+   "length_m": 210.0,
+   "volume_m3": 132327.86630279792
+  },
+  {
+   "H_range_m": [
+    20,
+    30
+   ],
+   "length_m": 170.0,
+   "volume_m3": 221991.02748108702
+  },
+  {
+   "H_range_m": [
+    30,
+    50
+   ],
+   "length_m": 360.0,
+   "volume_m3": 1099751.6177653146
+  },
+  {
+   "H_range_m": [
+    50,
+    80
+   ],
+   "length_m": 350.0,
+   "volume_m3": 2440331.329904232
+  },
+  {
+   "H_range_m": [
+    80,
+    100
+   ],
+   "length_m": 80.0,
+   "volume_m3": 972413.7382751126
+  },
+  {
+   "H_range_m": [
+    100,
+    130
+   ],
+   "length_m": 2930.0,
+   "volume_m3": 59057802.8982308
+  }
+ ]
+}
+storage: {'V_gross_nwl_m3': 38071819.479501985, 'V_gross_trapezoid_m3': 37710174.5, 'V_gross_2m_dem_m3': 38059172.320781276, 'V_dam_inside_below_nwl_m3': 16618040.159821333, 'V_net_nwl_m3': 21453779.319680654, 'A_nwl_m2': 532922.7600000001, 'ring_area_m2': 564063.9405975195, 'ground_inside_min_m': 1126.502197265625, 'ground_inside_max_m': 1290.64013671875, 'area_inside_above_nwl_m2': 31149.0}

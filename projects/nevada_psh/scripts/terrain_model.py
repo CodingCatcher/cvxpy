@@ -41,9 +41,13 @@ DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "outputs")
 
 SECTIONS = {
-    "rockfill": {"crest_w": 10.0, "m_us": 1.6, "m_ds": 1.6},
-    "gravity":  {"crest_w": 6.0,  "m_us": 0.0, "m_ds": 0.8},
+    "rockfill": {"crest_w": 10.0, "m_us": 1.6, "m_ds": 1.6},   # 通用堆石（读资料 1 时的初始假设）
+    "gravity":  {"crest_w": 6.0,  "m_us": 0.0, "m_ds": 0.8},   # 通用重力
+    "rcc":      {"crest_w": 6.1,  "m_us": 0.0, "m_ds": 0.8},   # RCC 重力：顶宽 ≥20 ft（USBR RCC 手册施工要求），无模板下游 ≥0.8:1
+    "cfrd":     {"crest_w": 10.0, "m_us": 1.4, "m_ds": 1.4},   # 面板堆石：上游 1.3–1.7（取 1.4），下游堆石休止角 1.3–1.4（取 1.4），顶宽 ≥20 ft→10 m
+    "ecrd":     {"crest_w": 10.0, "m_us": 2.0, "m_ds": 1.8},   # 心墙堆石：案例 New Hogan/Flannagan 上游 2:1、下游 1.6–2:1
 }
+CLOSE_LIMIT = {"ds": 350.0, "us": 250.0}   # auto_close：面板堆石下游趾 ≤350 m、上游趾 ≤250 m 才算"闭合"，否则改 RCC
 AUTO_GRAVITY_MAX_H = 30.0   # m：auto 模式下 H ≤ 30 m 的段用重力断面（只是演示）
 
 
@@ -264,9 +268,17 @@ def flattest_closing_slope(off, zg, crest: float, crest_w: float, side: int, ms=
     return None
 
 
-def choose_spec(mode: str, H_axis: float) -> tuple[str, dict]:
+def choose_spec(mode: str, H_axis: float, off=None, zsec=None, crest: float | None = None) -> tuple[str, dict]:
     if mode == "auto":
         return ("gravity", SECTIONS["gravity"]) if H_axis <= AUTO_GRAVITY_MAX_H else ("rockfill", SECTIONS["rockfill"])
+    if mode == "auto_height":   # 题设规则：H ≤ 30 m 用混凝土（RCC），其余面板堆石
+        return ("rcc", SECTIONS["rcc"]) if H_axis <= AUTO_GRAVITY_MAX_H else ("cfrd", SECTIONS["cfrd"])
+    if mode == "auto_close":    # 地形规则：面板堆石能在限距内闭合才用，否则 RCC
+        if off is None:
+            return ("cfrd", SECTIONS["cfrd"])
+        d = dam_section(off, zsec, crest, SECTIONS["cfrd"], None)
+        ok = (d["toe_ds"] is not None and d["toe_us"] is not None and -d["toe_ds"] <= CLOSE_LIMIT["ds"] and d["toe_us"] <= CLOSE_LIMIT["us"])
+        return ("cfrd", SECTIONS["cfrd"]) if ok else ("rcc", SECTIONS["rcc"])
     return mode, SECTIONS[mode]
 
 
@@ -327,7 +339,7 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
     rows = []
     for i in range(len(pts)):
         off, zsec = cross_section(t, pts[i], nrm[i])
-        kind, spec = choose_spec(mode, float(H_axis[i]))
+        kind, spec = choose_spec(mode, float(H_axis[i]), off, zsec, crest)
         d = dam_section(off, zsec, crest, spec, nwl)
         d.update({"station": float(s[i]), "E": float(pts[i, 0]), "N": float(pts[i, 1]), "z_ground": float(zg[i]), "kind": kind,
                   "feasible": bool(np.isfinite(d["area"]))})
@@ -392,8 +404,8 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
     offv = np.einsum("ij,ij->i", vec, dn[idx])            # 带号偏移：>0 库内
     # 每个像元用最近站的断面类型
     st_dense = np.concatenate([[0], np.cumsum(np.hypot(np.diff(dense[:, 0]), np.diff(dense[:, 1])))])
-    H_dense = crest - t.elev(dense[:, 0], dense[:, 1])
-    kinds = np.array([choose_spec(mode, float(h))[0] for h in H_dense])
+    kinds_rows = np.array([r["kind"] for r in rows])
+    kinds = kinds_rows[np.clip(np.searchsorted(st_rows_tmp := np.array([r["station"] for r in rows]), st_dense), 0, len(rows) - 1)]
     zf = np.full(offv.shape, -np.inf)
     for kname, spec in SECTIONS.items():
         k = kinds[idx] == kname
@@ -447,7 +459,7 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
         areas2 = []
         for i in range(len(p2)):
             off, zsec = cross_section(t, p2[i], n2[i])
-            kind, spec = choose_spec(mode, float(crest - z2[i]))
+            kind, spec = choose_spec(mode, float(crest - z2[i]), off, zsec, crest)
             areas2.append(dam_section(off, zsec, crest, spec, nwl)["area"])
         rr = [{"area": a, "station": float(v)} for a, v in zip(areas2, s2)]
         summary["dam_volume_m3"][f"end_area_{int(st2)}m"] = end_area_volume(rr)
@@ -488,7 +500,7 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
     zt_us = np.array([r.get("z_toe_us", np.nan) for r in rows]); zt_ds = np.array([r.get("z_toe_ds", np.nan) for r in rows])
     ax.plot(s, zt_us / FT, "c.", ms=2, label="upstream toe elev"); ax.plot(s, zt_ds / FT, "m.", ms=2, label="downstream toe elev")
     kinds_arr = np.array([r["kind"] for r in rows])
-    for kname, col in (("gravity", "orange"), ("rockfill", "green")):
+    for kname, col in (("gravity", "orange"), ("rcc", "orange"), ("rockfill", "green"), ("cfrd", "green"), ("ecrd", "olive")):
         k = kinds_arr == kname
         if k.any():
             ax.fill_between(s, zg / FT, crest_ft, where=k, color=col, alpha=0.25, label=f"{kname} segments")
@@ -506,14 +518,14 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
     axs = np.atleast_1d(axs)
     for ax, i in zip(axs, picks):
         off, zsec = cross_section(t, pts[i], nrm[i])
-        kind, spec = choose_spec(mode, float(Hs[i]))
+        kind, spec = choose_spec(mode, float(Hs[i]), off, zsec, crest)
         d = dam_section(off, zsec, crest, spec, nwl)
         ax.plot(off, zsec / FT, "k-", lw=1)
         if d["toe_us"] is not None and d["toe_ds"] is not None:
             b = spec["crest_w"]
             xs = [d["toe_ds"], -b / 2, b / 2, d["toe_us"]]
             zs = [d["z_toe_ds"] / FT, crest_ft, crest_ft, d["z_toe_us"] / FT]
-            ax.fill(xs + [d["toe_us"], d["toe_ds"]], zs + [d["z_toe_us"] / FT, d["z_toe_ds"] / FT], color="orange" if kind == "gravity" else "green", alpha=0.35)
+            ax.fill(xs + [d["toe_us"], d["toe_ds"]], zs + [d["z_toe_us"] / FT, d["z_toe_ds"] / FT], color="orange" if kind in ("gravity", "rcc") else "green", alpha=0.35)
             ax.plot(xs, zs, "r-", lw=1)
         ax.axhline(nwl_ft, color="b", ls="--", lw=0.7)
         ax.set_title(f"station {s[i]:.0f} m  H_axis={Hs[i]:.0f} m  {kind}  area={d['area']:.0f} m²  base={d.get('base_width', float('nan')):.0f} m  {d['note']}", fontsize=9)
@@ -533,6 +545,80 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
     return summary
 
 
+def compare_types(name: str, crest_ft: float, nwl_ft: float, step: float = 10.0, types=("rcc", "cfrd", "ecrd", "rockfill")):
+    """同一坝线上，每站放四种断面，记录坝趾、面积、闭合性；并给各类型的方量（平均断面法 + 网格法）、上游楔与净库容。"""
+    t = Terrain(os.path.join(DATA, "dem_3dep_1m_utm10.tif"), os.path.join(DATA, "dem_3dep_1m_utm10.json"))
+    cand = json.load(open(os.path.join(DATA, "dam_line_candidates.json")))[name]
+    line = LineString(cand["coords"]); closed = cand["closed"]
+    poly = Polygon(cand["coords"]) if closed else None
+    inside_pt = cand.get("inside_point")
+    crest = crest_ft * FT; nwl = nwl_ft * FT
+    s, pts, zg = longitudinal_profile(t, line, step)
+    nrm = inward_normals(pts, poly, inside_pt)
+    sl = t.slope_deg()
+    rows = []
+    for i in range(len(pts)):
+        off, zsec = cross_section(t, pts[i], nrm[i])
+        # 两侧 100 m 内的平均地面坡角（按断面线）
+        def side_slope(sign):
+            k = (off * sign > 0) & (off * sign <= 100)
+            zz = zsec[k]; oo = off[k]
+            if np.isfinite(zz).sum() < 5: return float("nan")
+            a, b = np.polyfit(oo[np.isfinite(zz)], zz[np.isfinite(zz)], 1)
+            return float(np.degrees(np.arctan(abs(a))))
+        r = {"station": float(s[i]), "E": float(pts[i, 0]), "N": float(pts[i, 1]), "z_ground_ft": float(zg[i] / FT),
+             "H_axis": float(crest - zg[i]), "slope_us_deg": side_slope(+1), "slope_ds_deg": side_slope(-1)}
+        for ty in types:
+            d = dam_section(off, zsec, crest, SECTIONS[ty], nwl)
+            r[f"{ty}_area"] = d["area"]; r[f"{ty}_toe_us"] = d["toe_us"]; r[f"{ty}_toe_ds"] = d["toe_ds"]
+            r[f"{ty}_base"] = d.get("base_width", float("nan")); r[f"{ty}_Hmax"] = d.get("H_max", float("nan"))
+            r[f"{ty}_us_wedge"] = d["area_us_below_nwl"]
+            r[f"{ty}_closes"] = bool(np.isfinite(d["area"]))
+        rows.append(r)
+    # 方量：平均断面法
+    tot = {}
+    for ty in types:
+        A = np.array([r[f"{ty}_area"] for r in rows]); W = np.array([r[f"{ty}_us_wedge"] for r in rows])
+        ok = np.isfinite(A)
+        V = float(sum(0.5 * (A[i] + A[i + 1]) * step for i in range(len(A) - 1) if ok[i] and ok[i + 1]))
+        Wv = float(sum(0.5 * (W[i] + W[i + 1]) * step for i in range(len(A) - 1) if ok[i] and ok[i + 1]))
+        tot[ty] = {"end_area_m3": V, "us_wedge_m3": Wv, "length_closes_m": float(ok.sum() * step), "length_open_m": float((~ok).sum() * step),
+                   "base_width_max_m": float(np.nanmax([r[f"{ty}_base"] for r in rows])), "H_max_structural_m": float(np.nanmax([r[f"{ty}_Hmax"] for r in rows]))}
+    # 网格法（各类型）
+    from scipy.spatial import cKDTree
+    dense = densify(line, 2.0); dn = inward_normals(dense, poly, inside_pt); tree = cKDTree(dense)
+    st_dense = np.concatenate([[0], np.cumsum(np.hypot(np.diff(dense[:, 0]), np.diff(dense[:, 1])))])
+    st_rows = np.array([r["station"] for r in rows])
+    buf = line.buffer(950.0); win, m = t.mask_inside(buf)
+    X, Y = np.meshgrid(t.xc[win[1]], t.yc[win[0]]); zz = t.z[win]; sel = m & np.isfinite(zz)
+    dd, idx = tree.query(np.column_stack([X[sel], Y[sel]]))
+    vec = np.column_stack([X[sel], Y[sel]]) - dense[idx]; offv = np.einsum("ij,ij->i", vec, dn[idx])
+    for ty in types:
+        spec = SECTIONS[ty]; a = np.abs(offv); b = spec["crest_w"]
+        mm = np.where(offv > 0, spec["m_us"], spec["m_ds"])
+        with np.errstate(divide="ignore", invalid="ignore"):
+            face = np.where(a <= b / 2, crest, np.where(mm > 0, crest - (a - b / 2) / np.where(mm > 0, mm, 1), -np.inf))
+        thick = np.maximum(face - zz[sel], 0.0)
+        feas = np.array([r[f"{ty}_closes"] for r in rows], dtype=float)
+        feas_dense = np.interp(st_dense[idx], st_rows, feas) >= 0.999
+        tu = np.interp(st_dense[idx], st_rows, np.nan_to_num(np.array([r[f"{ty}_toe_us"] if r[f"{ty}_toe_us"] is not None else np.nan for r in rows], dtype=float), nan=0.0))
+        td = np.interp(st_dense[idx], st_rows, np.nan_to_num(np.array([r[f"{ty}_toe_ds"] if r[f"{ty}_toe_ds"] is not None else np.nan for r in rows], dtype=float), nan=0.0))
+        within = (offv <= tu) & (offv >= td) & feas_dense
+        tot[ty]["grid_m3"] = float(np.sum(thick[within]) * t.px ** 2)
+    if poly is not None:
+        _, vols, _ = storage_curve(t, poly, np.array([nwl]))
+        for ty in types:
+            tot[ty]["gross_storage_m3"] = float(vols[0]); tot[ty]["net_storage_m3"] = float(vols[0]) - tot[ty]["us_wedge_m3"]
+    out = {"line": name, "crest_ft": crest_ft, "nwl_ft": nwl_ft, "length_m": float(s[-1]), "types": {k: SECTIONS[k] for k in types}, "totals": tot}
+    json.dump(out, open(os.path.join(OUT, f"types_{name}_summary.json"), "w"), indent=1)
+    keys = list(rows[0].keys())
+    with open(os.path.join(OUT, f"types_{name}_stations.csv"), "w") as f:
+        f.write(",".join(keys) + "\n")
+        for r in rows:
+            f.write(",".join("" if (isinstance(v, float) and not np.isfinite(v)) or v is None else str(v) for v in (r[k] for k in keys)) + "\n")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--build-lines", action="store_true")
@@ -541,7 +627,8 @@ def main():
     ap.add_argument("--run", type=str)
     ap.add_argument("--crest-ft", type=float, default=4120.0)
     ap.add_argument("--nwl-ft", type=float, default=4100.0)
-    ap.add_argument("--section", choices=["rockfill", "gravity", "auto"], default="auto")
+    ap.add_argument("--section", choices=["rockfill", "gravity", "rcc", "cfrd", "ecrd", "auto", "auto_height", "auto_close"], default="auto")
+    ap.add_argument("--compare-types", type=str, help="line name: per-station comparison of rcc/cfrd/ecrd/rockfill (writes outputs/types_<line>_*.csv/json)")
     ap.add_argument("--floor-ft", type=float, default=None)
     ap.add_argument("--step", type=float, default=10.0)
     ap.add_argument("--tag", type=str, default="", help="suffix for output file names")
@@ -552,6 +639,9 @@ def main():
         for k, v in c.items():
             if isinstance(v, dict) and "coords" in v:
                 print(k, "closed" if v["closed"] else "open", f"{LineString(v['coords']).length:.0f} m")
+    if a.compare_types:
+        o = compare_types(a.compare_types, a.crest_ft, a.nwl_ft, a.step)
+        print(json.dumps(o["totals"], indent=1))
     if a.run:
         sm = run(a.run, a.crest_ft, a.nwl_ft, a.section, a.floor_ft, a.step, a.tag)
         print(json.dumps({k: v for k, v in sm.items() if k != "storage"}, indent=1, ensure_ascii=False))

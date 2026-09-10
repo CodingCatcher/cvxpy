@@ -1,0 +1,74 @@
+{
+ "line": "A_parcel_ring_3700",
+ "crest_ft": 4120.0,
+ "nwl_ft": 4100.0,
+ "length_m": 4588.991531647551,
+ "types": {
+  "rcc": {
+   "crest_w": 6.1,
+   "m_us": 0.0,
+   "m_ds": 0.8
+  },
+  "cfrd": {
+   "crest_w": 10.0,
+   "m_us": 1.4,
+   "m_ds": 1.4
+  },
+  "ecrd": {
+   "crest_w": 10.0,
+   "m_us": 2.0,
+   "m_ds": 1.8
+  },
+  "rockfill": {
+   "crest_w": 10.0,
+   "m_us": 1.6,
+   "m_ds": 1.6
+  }
+ },
+ "totals": {
+  "rcc": {
+   "end_area_m3": 34747147.71950463,
+   "us_wedge_m3": 1584480.8447630417,
+   "length_closes_m": 4640.0,
+   "length_open_m": 0.0,
+   "base_width_max_m": 315.0,
+   "H_max_structural_m": 132.48406265039762,
+   "grid_m3": 41873096.00624718,
+   "gross_storage_m3": 38071630.75085452,
+   "net_storage_m3": 36487149.90609148
+  },
+  "cfrd": {
+   "end_area_m3": 114352674.44714667,
+   "us_wedge_m3": 27103259.134342898,
+   "length_closes_m": 4640.0,
+   "length_open_m": 0.0,
+   "base_width_max_m": 931.0,
+   "H_max_structural_m": 169.25682241560298,
+   "grid_m3": 155096774.18255985,
+   "gross_storage_m3": 38071630.75085452,
+   "net_storage_m3": 10968371.616511624
+  },
+  "ecrd": {
+   "end_area_m3": 150629736.21750087,
+   "us_wedge_m3": 36004548.447022334,
+   "length_closes_m": 4520.0,
+   "length_open_m": 120.0,
+   "base_width_max_m": 1203.0,
+   "H_max_structural_m": 223.72005633370736,
+   "grid_m3": 205299798.84878716,
+   "gross_storage_m3": 38071630.75085452,
+   "net_storage_m3": 2067082.3038321882
+  },
+  "rockfill": {
+   "end_area_m3": 138255096.96189985,
+   "us_wedge_m3": 31513835.664219704,
+   "length_closes_m": 4640.0,
+   "length_open_m": 0.0,
+   "base_width_max_m": 1071.0,
+   "H_max_structural_m": 196.47102831235418,
+   "grid_m3": 204235472.47390586,
+   "gross_storage_m3": 38071630.75085452,
+   "net_storage_m3": 6557795.086634818
+  }
+ }
+}
