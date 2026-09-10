@@ -26,7 +26,7 @@
 | 4 | USACE EM 1110-2-2200 (1995) + FERC 导则第 3 章重力坝 (2016) | `notes/04_em_1110-2-2200_gravity.md` | 已读，待讨论 |
 | 5 | USBR RCC Manual 2017 + USACE EM 1110-2-2006 (2000) | `notes/05_usbr_rcc_manual_2017.md` | 已读，待讨论 |
 | 6 | USBR Engineering Geology Field Manual (卷 I/II) + 地块地质/地震/地形初查 | `notes/06_usbr_geology_field_manual.md` | 已读，待讨论 |
-| 7 | USACE EM 1110-2-2301 | — | 待读 |
+| 7 | USACE EM 1110-2-2301 试验采石场与试验填筑 (1994) | `notes/07_em_1110-2-2301_test_quarries_fills.md` | 已读，待讨论 |
 | 8 | USBR DS-13 ch.10 / ch.5 | — | 待读 |
 | 9 | Caterpillar Performance Handbook 49 | — | 待读 |
 | 10 | Komatsu Smart Construction | — | 待读 |
