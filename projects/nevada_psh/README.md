@@ -12,7 +12,7 @@
 | 路径 | 内容 |
 |---|---|
 | `notes/` | 每份资料一个读书笔记：学到什么、对本地块意味着什么、可直接引用的数值准则 |
-| `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡）。已有：`hillside_toe_geometry.py`（斜坡上各坝型坝趾位置与断面积）、`gravity_section_check.py`（重力坝断面按 EM 2200 / FERC 准则筛查）、`rcc_production_estimate.py`（RCC 段方量、热缝所需日浇量与拌合站规模）、`filter_gradation_limits.py`（DS-13 第 5 章反滤级配控制点：再分级、底土类别、D15F 上下限、D90F、带宽；含附录 C 算例复算）、`earthmoving_production.py`（Cat 手册 49：方量三态换算、滚动/坡度阻力与有效坡度、坡道功率、推土产量修正系数与曲线、松土测距法、挖掘机与压实机产量、卡车循环与牵引/缓速曲线读数；`--demo` 复算手册算例，`--site` 给本地块情况数字）、`compaction_coverage_and_acceptance.py`（国交省压实回数网格法的覆盖率/踏み残し与 GNSS 噪声模拟、まき出し厚换算、岩块料沉降收敛定回数、3D 出来形面管理"平均值 + 个别值 + 99.7%"判定、DEM 差分方量不确定度） |
+| `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡）。已有：`hillside_toe_geometry.py`（斜坡上各坝型坝趾位置与断面积）、`gravity_section_check.py`（重力坝断面按 EM 2200 / FERC 准则筛查）、`rcc_production_estimate.py`（RCC 段方量、热缝所需日浇量与拌合站规模）、`filter_gradation_limits.py`（DS-13 第 5 章反滤级配控制点：再分级、底土类别、D15F 上下限、D90F、带宽；含附录 C 算例复算）、`earthmoving_production.py`（Cat 手册 49：方量三态换算、滚动/坡度阻力与有效坡度、坡道功率、推土产量修正系数与曲线、松土测距法、挖掘机与压实机产量、卡车循环与牵引/缓速曲线读数；`--demo` 复算手册算例，`--site` 给本地块情况数字）、`compaction_coverage_and_acceptance.py`（国交省压实回数网格法的覆盖率/踏み残し与 GNSS 噪声模拟、まき出し厚换算、岩块料沉降收敛定回数、3D 出来形面管理"平均值 + 个别值 + 99.7%"判定、DEM 差分方量不确定度）、`ic_data_analysis.py`（FHWA 智能压实判据：CMV/MDP80 公式、压实曲线取目标 ICMV、90%/70% 覆盖判据、EU CCC 80%/10 百分位/CoV、ISSMGE 判据、四色阈值、相关系数门槛、半变异函数指数拟合、GPS 40 mm 校验） |
 | `data/` | 原始地形与站点数据：`parcel_014160001000.geojson`（宗地边界，WGS84，Nevada County 宗地服务）、`parcel_014160001000_utm10.json`（同，UTM 10N）、`dem_3dep_1m_utm10.tif` + `.json`（USGS 3DEP 1 m DEM，EPSG:32610，范围与像元见 JSON）、`site_context.json`（地质单元、断层距离、地震危险性、高程/坡度统计及其来源） |
 | `outputs/` | 表格与图（后续加入） |
 
@@ -30,7 +30,7 @@
 | 8 | USBR DS-13 ch.10 坝体施工 (2012) + ch.5 保护性反滤 (2011) | `notes/08_usbr_ds13_ch10_construction_ch5_filters.md` | 已读，待讨论 |
 | 9 | Caterpillar Performance Handbook 49 (2019) | `notes/09_caterpillar_performance_handbook_49.md` | 已读，待讨论 |
 | 10 | Komatsu Smart Construction（官方手册/产品页 + 日本国交省压实回数与 3D 出来形管理要领 + 独立实测） | `notes/10_komatsu_smart_construction.md` | 已读，待讨论 |
-| 11 | FHWA HIF-24-097 智能压实 | — | 待读 |
+| 11 | FHWA HIF-24-097 智能压实（2024）+ HIF-17-046/037/036、HIF-13-052、HIF-12-002 通用规范 + 堆石 CCC 独立文献 | `notes/11_fhwa_intelligent_compaction.md` | 已读，待讨论 |
 
 ## 交付物（读完后）
 
