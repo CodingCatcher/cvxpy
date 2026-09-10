@@ -101,6 +101,8 @@ cf_path = os.path.join(OUT, "wall_curves_cfrd.csv")
 if os.path.exists(cf_path):
     cc = [r for r in csv.DictReader(open(cf_path)) if r["crest_ft"].startswith("4050") and f(r["fill_est_Mm3"]) > 0.05]
     h.append("<h2>附录：按 CFRD 成本重搜（坝顶 4,050）</h2>")
+    first = cc[0] if cc else None
+    if first: h.append(f'<p>把边界成本换成 CFRD 断面（1.4:1 两面，坡地放大更大）再扫描：λ 大于 {f(first["lambda"]):g} 时一段墙都不值得修；λ = {f(first["lambda"]):g} 时出现的仍是东半环，估算填方 {f(first["fill_est_Mm3"]):.0f} Mm³（1 m 精算 CFRD 21 Mm³、同一组墙用 RCC 7 Mm³），边际效率 {first["marg_eff"]}——每 m³ 堆石换不到 0.5 m³ 库容。也就是说，这组墙段只在 RCC（或沟口 RCC + 其余堆石）下成立；全用堆石时"墙段组合"并不比全环 B1 更划算。</p>')
     h.append(table(["λ", "累计填方（CFRD 估算）Mm³", "累计天然库容 Mm³", "墙总长 m", "天然岸长 m", "边际效率"], [[f(r["lambda"]), f"{f(r['fill_est_Mm3']):.1f}", f"{f(r['storage_est_Mm3']):.1f}", f"{f(r['dam_len_m']):,.0f}", f"{f(r['free_len_m']):,.0f}", r["marg_eff"] or "—"] for r in cc]))
     if os.path.exists(os.path.join(OUT, "wall_curves_cfrd.png")): h.append(fig(os.path.join(OUT, "wall_curves_cfrd.png"), "图 5 CFRD 成本下的曲线。"))
 h.append('<p class="small">复算：<code>python3 scripts/wall_optimizer.py</code>（λ 扫描 + 精算，约 12 min）、<code>python3 scripts/wall_optimizer.py --plan=4050:2.1,4050:2.4,4000:2.1,3950:1.6,3900:1.85</code>（指定方案的平面与分段表）、<code>python3 scripts/wall_brief.py</code>。笔记：notes/16_wall_combination.md。</p>')
