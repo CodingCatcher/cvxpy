@@ -1,0 +1,122 @@
+[
+ {
+  "reach": 1,
+  "sta": "0-606",
+  "rcc_frac_outside": 0.02,
+  "rcc_max_overshoot_m": 5,
+  "cfrd_frac_outside": 0.1,
+  "cfrd_max_overshoot_m": 69,
+  "ecrd_frac_outside": 0.12,
+  "ecrd_max_overshoot_m": 91
+ },
+ {
+  "reach": 2,
+  "sta": "616-1882",
+  "rcc_frac_outside": 0.0,
+  "rcc_max_overshoot_m": 0,
+  "cfrd_frac_outside": 0.0,
+  "cfrd_max_overshoot_m": 0,
+  "ecrd_frac_outside": 0.0,
+  "ecrd_max_overshoot_m": 0
+ },
+ {
+  "reach": 3,
+  "sta": "1892-2293",
+  "rcc_frac_outside": 0.0,
+  "rcc_max_overshoot_m": 0,
+  "cfrd_frac_outside": 0.0,
+  "cfrd_max_overshoot_m": 0,
+  "ecrd_frac_outside": 0.0,
+  "ecrd_max_overshoot_m": 0
+ },
+ {
+  "reach": 4,
+  "sta": "2303-2695",
+  "rcc_frac_outside": 0.0,
+  "rcc_max_overshoot_m": 0,
+  "cfrd_frac_outside": 0.85,
+  "cfrd_max_overshoot_m": 259,
+  "ecrd_frac_outside": 0.97,
+  "ecrd_max_overshoot_m": 362
+ },
+ {
+  "reach": 5,
+  "sta": "2705-2893",
+  "rcc_frac_outside": 0.79,
+  "rcc_max_overshoot_m": 91,
+  "cfrd_frac_outside": 1.0,
+  "cfrd_max_overshoot_m": 142,
+  "ecrd_frac_outside": 1.0,
+  "ecrd_max_overshoot_m": 172
+ },
+ {
+  "reach": 6,
+  "sta": "2903-3323",
+  "rcc_frac_outside": 1.0,
+  "rcc_max_overshoot_m": 56,
+  "cfrd_frac_outside": 1.0,
+  "cfrd_max_overshoot_m": 94,
+  "ecrd_frac_outside": 1.0,
+  "ecrd_max_overshoot_m": 123
+ },
+ {
+  "reach": 7,
+  "sta": "3333-3482",
+  "rcc_frac_outside": 1.0,
+  "rcc_max_overshoot_m": 21,
+  "cfrd_frac_outside": 1.0,
+  "cfrd_max_overshoot_m": 35,
+  "ecrd_frac_outside": 1.0,
+  "ecrd_max_overshoot_m": 43
+ },
+ {
+  "reach": 8,
+  "sta": "3492-3762",
+  "rcc_frac_outside": 1.0,
+  "rcc_max_overshoot_m": 34,
+  "cfrd_frac_outside": 1.0,
+  "cfrd_max_overshoot_m": 49,
+  "ecrd_frac_outside": 1.0,
+  "ecrd_max_overshoot_m": 58
+ },
+ {
+  "reach": 9,
+  "sta": "3772-4110",
+  "rcc_frac_outside": null,
+  "rcc_max_overshoot_m": 0,
+  "cfrd_frac_outside": null,
+  "cfrd_max_overshoot_m": 0,
+  "ecrd_frac_outside": null,
+  "ecrd_max_overshoot_m": 0
+ },
+ {
+  "reach": 10,
+  "sta": "4120-4230",
+  "rcc_frac_outside": 1.0,
+  "rcc_max_overshoot_m": 20,
+  "cfrd_frac_outside": 1.0,
+  "cfrd_max_overshoot_m": 29,
+  "ecrd_frac_outside": 1.0,
+  "ecrd_max_overshoot_m": 34
+ },
+ {
+  "reach": 11,
+  "sta": "4240-4339",
+  "rcc_frac_outside": null,
+  "rcc_max_overshoot_m": 0,
+  "cfrd_frac_outside": null,
+  "cfrd_max_overshoot_m": 0,
+  "ecrd_frac_outside": null,
+  "ecrd_max_overshoot_m": 0
+ },
+ {
+  "reach": 12,
+  "sta": "4349-4589",
+  "rcc_frac_outside": 1.0,
+  "rcc_max_overshoot_m": 95,
+  "cfrd_frac_outside": 1.0,
+  "cfrd_max_overshoot_m": 172,
+  "ecrd_frac_outside": 1.0,
+  "ecrd_max_overshoot_m": 213
+ }
+]

@@ -325,15 +325,30 @@ def run(name: str, crest_ft: float, nwl_ft: float, mode: str, floor_ft: float | 
     os.makedirs(OUT, exist_ok=True)
     oname = name + (("_" + tag) if tag else "")
 
-    # 开挖情景（先改 DEM，再算一切）
-    cut_bcm = 0.0
-    if floor_ft is not None and poly is not None:
-        t.z, cut_bcm = excavate(t, poly, floor_ft * FT)
-
     # 1. 纵剖面
     s, pts, zg = longitudinal_profile(t, line, step)
     H_axis = crest - zg
     nrm = inward_normals(pts, poly, inside_pt)
+
+    # 开挖情景：可挖区 = 原地形上各站上游坝趾连线以内（水面下坝体不能挖），底面低于轴线地面时再按 0.75:1 切坡退让
+    cut_bcm = 0.0
+    if floor_ft is not None and poly is not None:
+        pit_pts = []
+        for i in range(len(pts)):
+            off, zsec = cross_section(t, pts[i], nrm[i])
+            kind, spec = choose_spec(mode, float(H_axis[i]), off, zsec, crest)
+            d = dam_section(off, zsec, crest, spec, nwl)
+            tu = d["toe_us"] if d["toe_us"] is not None else 0.0
+            pit_pts.append(pts[i] + max(tu, 0.0) * nrm[i])
+        pit = Polygon(pit_pts).buffer(0)
+        if pit.geom_type != "Polygon":
+            pit = max(pit.geoms, key=lambda g: g.area)
+        setback = max(0.0, float(np.nanmin(zg)) - floor_ft * FT) * 0.75
+        pit2 = pit.buffer(-setback)
+        if pit2.is_empty:
+            pit2 = pit.buffer(-setback * 0.5)
+        t.z, cut_bcm = excavate(t, pit2, floor_ft * FT)
+        zg = t.elev(pts[:, 0], pts[:, 1]); H_axis = crest - zg
 
     # 2. 逐站断面
     rows = []
