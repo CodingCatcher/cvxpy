@@ -1,0 +1,20 @@
+{
+ "source": "USGS 3DEP Elevation ImageServer exportImage (best available, resampled to 2 m for context only)",
+ "crs": "EPSG:32610",
+ "extent": {
+  "xmin": 683500,
+  "ymin": 4353000,
+  "xmax": 688500,
+  "ymax": 4358500
+ },
+ "width": 2500,
+ "height": 2750,
+ "pixel_size_m": [
+  2.0,
+  2.0
+ ],
+ "nodata": -9999,
+ "units": "m",
+ "downloaded": "2026-09-10",
+ "purpose": "context beyond parcel: ridge continuation south/east of the SE highland"
+}
