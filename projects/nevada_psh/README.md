@@ -12,7 +12,7 @@
 | 路径 | 内容 |
 |---|---|
 | `notes/` | 每份资料一个读书笔记：学到什么、对本地块意味着什么、可直接引用的数值准则 |
-| `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡）。已有：`hillside_toe_geometry.py`（斜坡上各坝型坝趾位置与断面积）、`gravity_section_check.py`（重力坝断面按 EM 2200 / FERC 准则筛查）、`rcc_production_estimate.py`（RCC 段方量、热缝所需日浇量与拌合站规模）、`filter_gradation_limits.py`（DS-13 第 5 章反滤级配控制点：再分级、底土类别、D15F 上下限、D90F、带宽；含附录 C 算例复算） |
+| `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡）。已有：`hillside_toe_geometry.py`（斜坡上各坝型坝趾位置与断面积）、`gravity_section_check.py`（重力坝断面按 EM 2200 / FERC 准则筛查）、`rcc_production_estimate.py`（RCC 段方量、热缝所需日浇量与拌合站规模）、`filter_gradation_limits.py`（DS-13 第 5 章反滤级配控制点：再分级、底土类别、D15F 上下限、D90F、带宽；含附录 C 算例复算）、`earthmoving_production.py`（Cat 手册 49：方量三态换算、滚动/坡度阻力与有效坡度、坡道功率、推土产量修正系数与曲线、松土测距法、挖掘机与压实机产量、卡车循环与牵引/缓速曲线读数；`--demo` 复算手册算例，`--site` 给本地块情况数字） |
 | `data/` | 原始地形与站点数据：`parcel_014160001000.geojson`（宗地边界，WGS84，Nevada County 宗地服务）、`parcel_014160001000_utm10.json`（同，UTM 10N）、`dem_3dep_1m_utm10.tif` + `.json`（USGS 3DEP 1 m DEM，EPSG:32610，范围与像元见 JSON）、`site_context.json`（地质单元、断层距离、地震危险性、高程/坡度统计及其来源） |
 | `outputs/` | 表格与图（后续加入） |
 
@@ -28,7 +28,7 @@
 | 6 | USBR Engineering Geology Field Manual (卷 I/II) + 地块地质/地震/地形初查 | `notes/06_usbr_geology_field_manual.md` | 已读，待讨论 |
 | 7 | USACE EM 1110-2-2301 试验采石场与试验填筑 (1994) | `notes/07_em_1110-2-2301_test_quarries_fills.md` | 已读，待讨论 |
 | 8 | USBR DS-13 ch.10 坝体施工 (2012) + ch.5 保护性反滤 (2011) | `notes/08_usbr_ds13_ch10_construction_ch5_filters.md` | 已读，待讨论 |
-| 9 | Caterpillar Performance Handbook 49 | — | 待读 |
+| 9 | Caterpillar Performance Handbook 49 (2019) | `notes/09_caterpillar_performance_handbook_49.md` | 已读，待讨论 |
 | 10 | Komatsu Smart Construction | — | 待读 |
 | 11 | FHWA HIF-24-097 智能压实 | — | 待读 |
 
