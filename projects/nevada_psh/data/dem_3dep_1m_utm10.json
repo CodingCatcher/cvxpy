@@ -1,0 +1,24 @@
+{
+ "source": "USGS 3DEP Elevation ImageServer exportImage (best available, nominal 1 m)",
+ "crs": "EPSG:32610",
+ "extent": {
+  "xmin": 684500,
+  "ymin": 4355400,
+  "xmax": 687300,
+  "ymax": 4357800,
+  "spatialReference": {
+   "wkid": 32610,
+   "latestWkid": 32610
+  }
+ },
+ "width": 2800,
+ "height": 2400,
+ "pixel_size_m": [
+  1.0,
+  1.0
+ ],
+ "nodata": -9999,
+ "units": "m",
+ "download_url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage?bbox=684500%2C4355400%2C687300%2C4357800&bboxSR=32610&imageSR=32610&size=2800%2C2400&format=tiff&pixelType=F32&noData=-9999&interpolation=RSP_BilinearInterpolation&f=json",
+ "downloaded": "2026-09-10"
+}

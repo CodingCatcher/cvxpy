@@ -13,7 +13,7 @@
 |---|---|
 | `notes/` | 每份资料一个读书笔记：学到什么、对本地块意味着什么、可直接引用的数值准则 |
 | `scripts/` | 可复算的脚本（几何、方量、库容、稳定、挖填平衡）。已有：`hillside_toe_geometry.py`（斜坡上各坝型坝趾位置与断面积）、`gravity_section_check.py`（重力坝断面按 EM 2200 / FERC 准则筛查）、`rcc_production_estimate.py`（RCC 段方量、热缝所需日浇量与拌合站规模） |
-| `data/` | 原始地形（DEM）、宗地边界、参数文件（后续加入） |
+| `data/` | 原始地形与站点数据：`parcel_014160001000.geojson`（宗地边界，WGS84，Nevada County 宗地服务）、`parcel_014160001000_utm10.json`（同，UTM 10N）、`dem_3dep_1m_utm10.tif` + `.json`（USGS 3DEP 1 m DEM，EPSG:32610，范围与像元见 JSON）、`site_context.json`（地质单元、断层距离、地震危险性、高程/坡度统计及其来源） |
 | `outputs/` | 表格与图（后续加入） |
 
 ## 资料进度
@@ -25,7 +25,7 @@
 | 3 | USBR DS-13 (ch.1/2/3/4/9/13) | `notes/03_usbr_ds13_embankment.md` | 已读，待讨论 |
 | 4 | USACE EM 1110-2-2200 (1995) + FERC 导则第 3 章重力坝 (2016) | `notes/04_em_1110-2-2200_gravity.md` | 已读，待讨论 |
 | 5 | USBR RCC Manual 2017 + USACE EM 1110-2-2006 (2000) | `notes/05_usbr_rcc_manual_2017.md` | 已读，待讨论 |
-| 6 | USBR Engineering Geology Field Manual | — | 待读 |
+| 6 | USBR Engineering Geology Field Manual (卷 I/II) + 地块地质/地震/地形初查 | `notes/06_usbr_geology_field_manual.md` | 已读，待讨论 |
 | 7 | USACE EM 1110-2-2301 | — | 待读 |
 | 8 | USBR DS-13 ch.10 / ch.5 | — | 待读 |
 | 9 | Caterpillar Performance Handbook 49 | — | 待读 |
